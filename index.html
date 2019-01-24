@@ -105,16 +105,24 @@ a:hover {
 <ul class="list-group" id="stopsList">
 </ul>
 <div class="gettingStop">
-<div class="spinner-grow text-danger" role="status">
-  <span class="sr-only">Loading...</span>
+	<div class="spinner-grow text-danger" role="status">
+	  <span class="sr-only">Loading...</span>
+	</div>
+	<div class="spinner-grow text-warning" role="status">
+	  <span class="sr-only">Loading...</span>
+	</div>
+	<div class="spinner-grow text-success" role="status">
+	  <span class="sr-only">Loading...</span>
+	</div>
 </div>
-<div class="spinner-grow text-warning" role="status">
-  <span class="sr-only">Loading...</span>
+<div class="toast routeToast" style="position: absolute; top: 10px; right: 10px; border: 1px solid RebeccaPurple ;">
+	<div class="toast-header" style="background-color: RebeccaPurple ;color: white;">
+		<strong class="routeNow">---</strong>
+	</div>
+	<div class="toast-body" style="text-align: center;">
+		<p class="routeFrom"></p><p>TO</p><p class="routeTo"></p>
+	</div>
 </div>
-<div class="spinner-grow text-success" role="status">
-  <span class="sr-only">Loading...</span>
-</div>
-<div>
 </body>
 <script>
 $(document).ready(function(){
@@ -150,15 +158,18 @@ function getstops(bound) {
 			var jsonStr = JSON.stringify(result);
 			var jsonObj = JSON.parse(jsonStr);
 			var stopsCount = jsonObj.data.routeStops.length;
-			
+
+			var oriCNameRaw = jsonObj.data.basicInfo.OriCName;
+			var oriCName = parseByUnicode(oriCNameRaw);			
+			var destCNameRaw = jsonObj.data.basicInfo.DestCName;
+			var destCName = parseByUnicode(destCNameRaw);			
+
 			var stopItems = "";
 			var prevFare = 0;
 			var fareColor = 0;
 			for(var i = 0; i < stopsCount; i++){
 				var cNameRaw = jsonObj.data.routeStops[i].CName;
-				var destCNameRaw = jsonObj.data.basicInfo.DestCName;
 				var cName = parseByUnicode(cNameRaw);
-				var destCName = parseByUnicode(destCNameRaw);
 				var airFare = new Number(jsonObj.data.routeStops[i].AirFare).toFixed(1);
 				if(airFare != prevFare){
 					prevFare = airFare;
@@ -172,9 +183,14 @@ function getstops(bound) {
 			$("#stopsList").html(stopItems);
 			$('[data-toggle="popover"]').popover();
 
+			$(".routeNow").html($("#routeNo").val().toUpperCase());
+			$(".routeFrom").html(oriCName);
+			$(".routeTo").html(destCName);
+
 			var top = document.body.scrollTop || document.documentElement.scrollTop
 			scrollBy(0,-top);
 			$(".gettingStop").css("display","none");
+			$('.routeToast').toast('show');
 			$("#stopsList").fadeIn(500);
 		}
 	});
