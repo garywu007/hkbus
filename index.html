@@ -205,8 +205,10 @@ function getstops(bound) {
 			var top = document.body.scrollTop || document.documentElement.scrollTop
 			scrollBy(0,-top);
 			$(".gettingStop").css("display","none");
-			$('.routeToast').toast('show');
 			$("#stopsList").fadeIn(500);
+			$("#stopsList").fadeIn(500, function(){
+				$('.routeToast').toast('show');
+			});
 		}
 	});
 }
