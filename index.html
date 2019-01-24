@@ -80,6 +80,21 @@ a:hover {
 	text-align: center;
 	display: none;
 }
+
+.routeToast {
+	position: absolute;
+	top: 10px; right: 10px;
+	border: 1px solid RebeccaPurple;
+}
+
+.routeToast .toast-header{
+	background-color: RebeccaPurple;
+	color: white;
+}
+
+.routeToast .toast-body{
+	text-align: center;
+}
 </style>
 </head>
 <body>
@@ -115,11 +130,11 @@ a:hover {
 	  <span class="sr-only">Loading...</span>
 	</div>
 </div>
-<div class="toast routeToast" style="position: absolute; top: 10px; right: 10px; border: 1px solid RebeccaPurple ;">
-	<div class="toast-header" style="background-color: RebeccaPurple ;color: white;">
+<div class="toast routeToast" data-delay="3000">
+	<div class="toast-header">
 		<strong class="routeNow">---</strong>
 	</div>
-	<div class="toast-body" style="text-align: center;">
+	<div class="toast-body">
 		<p class="routeFrom"></p><p>TO</p><p class="routeTo"></p>
 	</div>
 </div>
