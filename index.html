@@ -155,7 +155,9 @@ $(document).ready(function(){
     });
 	
 	var route = getQueryVariable("r");
-	$("#routeNo").val(route);
+	if(route){
+		$("#routeNo").val(route);
+	}
 });
 
 function getstops(bound) {
