@@ -105,7 +105,7 @@ a:hover {
 <body>
 
 <nav class="navbar fixed-bottom navbar-expand-sm bg-dark navbar-dark">
-  <a class="navbar-brand" href="http://www.mtr.com.hk/alert/map_all.html">
+  <a class="navbar-brand" onclick="openMTR();">
     <img src="http://www.kmb.hk/chi/assets/KMB_logo.svg" alt="logo" style="width:3em;">
     <img src="http://www.kmb.hk/chi/assets/LWB_logo.svg" alt="logo" style="width:3em;">
   </a>
@@ -311,6 +311,10 @@ function getQueryVariable(variable){
 		if(pair[0] == variable){return pair[1];}
 	}
 	return(false);
+}
+	
+function openMTR(){
+	location.href = "http://www.mtr.com.hk/alert/map_all.html";
 }
 </script>
 </html>
