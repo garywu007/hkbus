@@ -252,9 +252,9 @@ function getETA(Route, BSICode, Bound, ServiceType, Seq) {
 			var timeStr = "";
 			for(var i = 0; i < jsonObj.data.response.length; i++){
 				if(i == 0){
-					timeStr += "<font color='gray'>" + jsonObj.data.response[i].ex.split(" ")[1] + "</font>&nbsp;" + jsonObj.data.response[i].t;
+					timeStr += "<span class='trueTime'>" + jsonObj.data.response[i].ex.split(" ")[1] + "</span>&nbsp;" + jsonObj.data.response[i].t;
 				} else {
-					timeStr += "<br>" + "<font color='gray'>" + jsonObj.data.response[i].ex.split(" ")[1] + "</font>&nbsp;" + jsonObj.data.response[i].t;
+					timeStr += "<br>" + "<span class='trueTime'>" + jsonObj.data.response[i].ex.split(" ")[1] + "</span>&nbsp;" + jsonObj.data.response[i].t;
 				}
 			}
 			//alert(time0 + "\n" + time1 + "\n" + time2);
