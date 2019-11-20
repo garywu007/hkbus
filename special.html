@@ -242,12 +242,12 @@ function getstops(bound) {
 
 				if(reRoute == true){
 					if(theP.innerHTML.indexOf(" - ") > 0){
-						var str = theP.innerHTML.split(" - ");
+						var str = theP.innerHTML.replace(/—/g, "-").split(" - ");
 						specialRoutesNo.push(str[0]);
 						specialRoutesInfo.push(str[1]);
 					} else if(theP.innerHTML.indexOf(" ") > 0){
-						var str0 = theP.innerHTML.split(" ", 1)[0];
-						var str1 = theP.innerHTML.replace("-", "").replace(str0 + " ", "");
+						var str0 = theP.innerHTML.replace(/—/g, "-").split(" ", 1)[0];
+						var str1 = theP.innerHTML.replace(/—/g, "-").replace("-", "").replace(str0 + " ", "");
 						specialRoutesNo.push(str0.replace("-", ""));
 						specialRoutesInfo.push(str1);
 					}
