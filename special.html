@@ -112,7 +112,7 @@ a:hover {
 <body>
 
 <nav class="navbar fixed-bottom navbar-expand-sm bg-dark navbar-dark">
-  <a class="navbar-brand" onclick="openRouteInfo();">
+  <a class="navbar-brand" onclick="openOffcialNews();">
     <img src="http://www.kmb.hk/chi/assets/KMB_logo.svg" alt="logo" style="width:3em;">
     <!--<img src="http://www.kmb.hk/chi/assets/LWB_logo.svg" alt="logo" style="width:3em;">-->
   </a>
@@ -262,11 +262,11 @@ function getstops(bound) {
 
 			if(normalRoutes.includes($("#routeNo").val())){
 				var stopItem = '<li class="list-group-item list-group-item-secondary" ><b><font color="green">' + $("#routeNo").val() + ' 路線正常</font><b></li>';
-				stopItem += '<li class="list-group-item list-group-item-secondary" ><b><font color="lightslategrey">點擊下方logo 可查閲該路線站點圖</font><b></li>';
+				stopItem += '<li class="list-group-item list-group-item-secondary" onclick="openRouteInfo();"><b><font color="lightslategrey">點擊查閲路線' + $("#routeNo").val() + '站點圖</font><b></li>';
 				stopItems += stopItem;
 			} else if(specialRoutesNo.includes($("#routeNo").val())){
 				var stopItem = '<li class="list-group-item list-group-item-secondary" ><b><font color="navy">' + $("#routeNo").val() + ' ' + specialRoutesInfo[specialRoutesNo.indexOf($("#routeNo").val())] + '</font><b></li>';
-				stopItem += '<li class="list-group-item list-group-item-secondary" ><b><font color="lightslategrey">點擊下方logo 可查閲該路線站點圖</font><b></li>';
+				stopItem += '<li class="list-group-item list-group-item-secondary" onclick="openRouteInfo();"><b><font color="lightslategrey">點擊查閲路線' + $("#routeNo").val() + '站點圖</font><b></li>';
 				stopItems += stopItem;
 			} else if($("#routeNo").val() != ""){
 				var stopItem = '<li class="list-group-item list-group-item-secondary" ><b><font color="red">' + $("#routeNo").val() + ' 暫停服務</font><b></li>';
@@ -373,6 +373,10 @@ function getQueryVariable(variable){
 	
 function openRouteInfo(){
 	window.open("http://hkbus.webhop.me/?r=" + $("#routeNo").val());
+}
+	
+function openOffcialNews(){
+	window.open("http://static.kmb.hk/news.html");
 }
 </script>
 </html>
