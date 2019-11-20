@@ -262,11 +262,11 @@ function getstops(bound) {
 
 			if(normalRoutes.includes($("#routeNo").val())){
 				var stopItem = '<li class="list-group-item list-group-item-secondary" ><b><font color="green">' + $("#routeNo").val() + ' 路線正常</font><b></li>';
-				stopItem += '<li class="list-group-item list-group-item-secondary" onclick="openRouteInfo();"><b><font color="lightslategrey">點擊查閲路線' + $("#routeNo").val() + '站點圖</font><b></li>';
+				stopItem += '<li class="list-group-item list-group-item-secondary" onclick="openRouteInfo();"><b><font color="lightslategrey">點擊查閲路線 ' + $("#routeNo").val() + ' 站點圖</font><b></li>';
 				stopItems += stopItem;
 			} else if(specialRoutesNo.includes($("#routeNo").val())){
 				var stopItem = '<li class="list-group-item list-group-item-secondary" ><b><font color="navy">' + $("#routeNo").val() + ' ' + specialRoutesInfo[specialRoutesNo.indexOf($("#routeNo").val())] + '</font><b></li>';
-				stopItem += '<li class="list-group-item list-group-item-secondary" onclick="openRouteInfo();"><b><font color="lightslategrey">點擊查閲路線' + $("#routeNo").val() + '站點圖</font><b></li>';
+				stopItem += '<li class="list-group-item list-group-item-secondary" onclick="openRouteInfo();"><b><font color="lightslategrey">點擊查閲路線 ' + $("#routeNo").val() + ' 站點圖</font><b></li>';
 				stopItems += stopItem;
 			} else if($("#routeNo").val() != ""){
 				var stopItem = '<li class="list-group-item list-group-item-secondary" ><b><font color="red">' + $("#routeNo").val() + ' 暫停服務</font><b></li>';
