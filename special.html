@@ -1,7 +1,7 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <title>香港公交集團</title>
+  <title>KMB Special</title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1, maximum-scale=1, user-scalable=no"/>
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -114,7 +114,7 @@ a:hover {
 <nav class="navbar fixed-bottom navbar-expand-sm bg-dark navbar-dark">
   <a class="navbar-brand" onclick="openRouteInfo();">
     <img src="http://www.kmb.hk/chi/assets/KMB_logo.svg" alt="logo" style="width:3em;">
-    <img src="http://www.kmb.hk/chi/assets/LWB_logo.svg" alt="logo" style="width:3em;">
+    <!--<img src="http://www.kmb.hk/chi/assets/LWB_logo.svg" alt="logo" style="width:3em;">-->
   </a>
 
   <div class="input-group input-group-sm routeInput">
@@ -168,7 +168,7 @@ $(document).ready(function(){
 });
 
 function getstops(bound) {
-	//$("#stopsList").fadeOut(50);
+	$("#stopsList").fadeOut(50);
 	$(".gettingStop").css("display","inline-block");
 	var route = parseByUnicode($("#routeNo").val());
 	$("#routeNo").val(route.toUpperCase());
@@ -176,37 +176,18 @@ function getstops(bound) {
 	$.ajax({
 		type: 'get',
 		crossDomain: true,
-   		//dataType : "json",
+   		dataType : "text/html",
 		jsonp : 'callback',
 		jsonpCallback: 'handleResponse',
-		url: 'http://search.kmb.hk/KMBWebSite/Function/FunctionRequest.ashx?action=getstops&route=' + $("#routeNo").val().toUpperCase() + '&bound=' + bound + '&serviceType=1',
-		success: function(result){
+		url: 'https://cors-anywhere.herokuapp.com/http://static.kmb.hk/news.html',
+		headers: {'Access-Control-Allow-Origin': '*'},
+		success: function(response){
+			var parser = new DOMParser();
+			var htmlDoc = parser.parseFromString(response, 'text/html');
+			var ps = htmlDoc.getElementsByTagName("p");
 			
-			var jsonStr = JSON.stringify(result);
-			var jsonObj = JSON.parse(jsonStr);
-			var stopsCount = jsonObj.data.routeStops.length;
-
-			var oriCNameRaw = jsonObj.data.basicInfo.OriCName;
-			var oriCName = parseByUnicode(oriCNameRaw);			
-			var destCNameRaw = jsonObj.data.basicInfo.DestCName;
-			var destCName = parseByUnicode(destCNameRaw);			
-
-			var stopItems = "";
-			var prevFare = 0;
-			var fareColor = 0;
-			for(var i = 0; i < stopsCount; i++){
-				var cNameRaw = jsonObj.data.routeStops[i].CName;
-				var cName = parseByUnicode(cNameRaw);
-				var airFare = new Number(jsonObj.data.routeStops[i].AirFare).toFixed(1);
-				if(airFare != prevFare){
-					prevFare = airFare;
-					fareColor += 1;
-				}
-				var fare = airFare > 0 ? '&nbsp;&nbsp;<span class="badge badge-pill fare-' + fareColor + '">$ ' + airFare + '</span>' : "";
-
-				var stopItem = '<li class="list-group-item list-group-item-secondary" onclick="getETA(\'' + $("#routeNo").val().toUpperCase() + '\', \'' + jsonObj.data.routeStops[i].BSICode + '\', ' + jsonObj.data.routeStops[i].Bound + ', ' + jsonObj.data.routeStops[i].ServiceType + ', ' + jsonObj.data.routeStops[i].Seq + ')">' + '<a tabindex="0" role="button" data-toggle="popover" data-trigger="focus" data-placement="bottom" title="' + cName + " > " + destCName + '" data-content="---">' + (i+1) + ". " + cName + '</a>' + '<b style="color: OrangeRed;">' + fare + '</b>' + '</li>';
-				stopItems += stopItem;
-			}
+			
+			/*
 			$("#stopsList").html(stopItems);
 			$('[data-toggle="popover"]').popover();
 
@@ -220,7 +201,82 @@ function getstops(bound) {
 			$("#stopsList").fadeIn(500);
 			$("#stopsList").fadeIn(500, function(){
 				$('.routeToast').toast('show');
+			});*/
+		},
+		error: function(response){
+			var parser = new DOMParser();
+			var htmlDoc = parser.parseFromString(response.responseText, 'text/html');
+			var ps = htmlDoc.getElementsByTagName("p");
+			//console.log(ps.length + "_" + ps[0].innerHTML);
+
+			var arrange = [];
+			var stopItems = "";
+
+			var normalRoutes = [];
+			var specialRoutesNo = [];
+			var specialRoutesInfo = [];
+			var reRoute = false;
+
+			var i = 0;
+			Array.prototype.forEach.call(ps, function(theP){
+				//console.log(i + ": " + theP.innerHTML);
+				
+				if(theP.innerHTML.indexOf("九巴安排") > 0){
+					arrange.push(theP.innerHTML);
+					var stopItem = '<li class="list-group-item list-group-item-secondary" >' + theP.innerHTML + '</li>';
+					stopItems += stopItem;
+				}
+
+				if(theP.innerHTML.indexOf("路線正常<") > 0){
+					//console.log(i + ": " + ps[i+1].innerHTML);
+					normalRoutes = ps[i+1].innerHTML.split(", ");
+				}
+
+				if(theP.innerHTML.indexOf("改道行走") > 0){
+					reRoute = true;
+				}
+
+				if(theP.innerHTML.indexOf("龍運") > 0){
+					reRoute = false;
+				}
+
+				if(reRoute == true){
+					if(theP.innerHTML.indexOf(" - ") > 0){
+						var str = theP.innerHTML.split(" - ");
+						specialRoutesNo.push(str[0]);
+						specialRoutesInfo.push(str[1]);
+					} else if(theP.innerHTML.indexOf(" ") > 0){
+						var str0 = theP.innerHTML.split(" ", 1)[0];
+						var str1 = theP.innerHTML.replace("-", "").replace(str0 + " ", "");
+						specialRoutesNo.push(str0.replace("-", ""));
+						specialRoutesInfo.push(str1);
+					}
+				}
+				i++;
 			});
+
+			/*
+			console.log("normal:  " + normalRoutes);
+			console.log("special: " + specialRoutesNo);
+			console.log("special: " + specialRoutesInfo);*/
+
+			if(normalRoutes.includes($("#routeNo").val())){
+				var stopItem = '<li class="list-group-item list-group-item-secondary" ><b><font color="green">' + $("#routeNo").val() + ' 路線正常</font><b></li>';
+				stopItem += '<li class="list-group-item list-group-item-secondary" ><b><font color="lightslategrey">點擊下方logo 可查閲該路線站點圖</font><b></li>';
+				stopItems += stopItem;
+			} else if(specialRoutesNo.includes($("#routeNo").val())){
+				var stopItem = '<li class="list-group-item list-group-item-secondary" ><b><font color="navy">' + $("#routeNo").val() + ' ' + specialRoutesInfo[specialRoutesNo.indexOf($("#routeNo").val())] + '</font><b></li>';
+				stopItem += '<li class="list-group-item list-group-item-secondary" ><b><font color="lightslategrey">點擊下方logo 可查閲該路線站點圖</font><b></li>';
+				stopItems += stopItem;
+			} else if($("#routeNo").val() != ""){
+				var stopItem = '<li class="list-group-item list-group-item-secondary" ><b><font color="red">' + $("#routeNo").val() + ' 暫停服務</font><b></li>';
+				stopItems += stopItem;
+			}
+
+			$("#stopsList").html(stopItems);
+			$("#stopsList").fadeIn(500);
+
+			$(".gettingStop").css("display","none");
 		}
 	});
 }
