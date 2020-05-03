@@ -206,6 +206,7 @@ function getRoute(bound) {
 }
 
 var theJson = '';
+var stopsName = new Map();
 function getstops(company, bound) {
 	$("#stopsList").fadeOut(50);
 	$(".gettingStop").css("display","inline-block");
@@ -221,21 +222,70 @@ function getstops(company, bound) {
 		url: 'https://rt.data.gov.hk/v1/transport/citybus-nwfb/route-stop/' + company + '/' + $("#routeNo").val().toLowerCase() + '/' + bound,
 		success: function(result){
 			
+			stopsName = new Map();
+			
 			var jsonStr = JSON.stringify(result);
 			var jsonObj = JSON.parse(jsonStr);
 			
-			theJson = jsonObj;
-			console.log(theJson);
+			var httpCallCount = jsonObj.data.length;
+			for(var i = 0; i < jsonObj.data.length; i++){
+				var item = i + "_ " + jsonObj.data[i].stop;
+				$.ajax({
+					type: 'get',
+					crossDomain: true,
+					dataType : "json",
+					jsonp : 'callback',
+					jsonpCallback: 'handleResponse',
+					url: 'https://rt.data.gov.hk/v1/transport/citybus-nwfb/stop/' + jsonObj.data[i].stop,
+					success: function(result1){
+						httpCallCount--;
+						
+						var jsonStr1 = JSON.stringify(result1);
+						var jsonObj1 = JSON.parse(jsonStr1);
+						
+						stopsName.set(jsonObj1.data.stop, jsonObj1.data.name_tc);
+						
+						if(0 == httpCallCount){
+							var stopsCount = jsonObj.data.length;
+							var stopItems = "";
+							
+							var oriCName = "pending";
+							var destCName = "pending";
+							
+							for(var j = 0; j < stopsCount; j++){
+								jsonObj.data[j].name_tc = stopsName.get(jsonObj.data[j].stop);
+								
+								var cName = stopsName.get(jsonObj.data[j].stop);
+								var fare = 0.0;
+								
+								var stopItem = '<li class="list-group-item list-group-item-secondary" onclick="">' + '<a tabindex="0" role="button" data-toggle="popover" data-trigger="focus" data-placement="bottom" title="' + cName + " > " + destCName + '" data-content="---">' + (j+1) + ". " + cName + '</a>' + '<b style="color: OrangeRed;">' + fare + '</b>' + '</li>';
+								stopItems += stopItem;
+							}
+							
+							$("#stopsList").html(stopItems);
+							$('[data-toggle="popover"]').popover();
+							$(".routeNow").html($("#routeNo").val().toUpperCase());
+							$(".routeFrom").html(oriCName);
+							$(".routeTo").html(destCName);
+							var top = document.body.scrollTop || document.documentElement.scrollTop
+							scrollBy(0,-top);
+							$(".gettingStop").css("display","none");
+							$("#stopsList").fadeIn(500);
+							$("#stopsList").fadeIn(500, function(){
+								$('.routeToast').toast('show');
+							});
+						}
+					}
+				});
+			}
 			
 			/*
-			var stopsCount = jsonObj.data.routeStops.length;
-
+			//var stopsCount = jsonObj.data.routeStops.length;
 			var oriCNameRaw = jsonObj.data.basicInfo.OriCName;
 			var oriCName = parseByUnicode(oriCNameRaw);			
 			var destCNameRaw = jsonObj.data.basicInfo.DestCName;
 			var destCName = parseByUnicode(destCNameRaw);			
-
-			var stopItems = "";
+			//var stopItems = "";
 			var prevFare = 0;
 			var fareColor = 0;
 			for(var i = 0; i < stopsCount; i++){
@@ -247,17 +297,14 @@ function getstops(company, bound) {
 					fareColor += 1;
 				}
 				var fare = airFare > 0 ? '&nbsp;&nbsp;<span class="badge badge-pill fare-' + fareColor + '">$ ' + airFare + '</span>' : "";
-
 				var stopItem = '<li class="list-group-item list-group-item-secondary" onclick="getETA(\'' + $("#routeNo").val().toUpperCase() + '\', \'' + jsonObj.data.routeStops[i].BSICode + '\', ' + jsonObj.data.routeStops[i].Bound + ', ' + jsonObj.data.routeStops[i].ServiceType + ', ' + jsonObj.data.routeStops[i].Seq + ')">' + '<a tabindex="0" role="button" data-toggle="popover" data-trigger="focus" data-placement="bottom" title="' + cName + " > " + destCName + '" data-content="---">' + (i+1) + ". " + cName + '</a>' + '<b style="color: OrangeRed;">' + fare + '</b>' + '</li>';
 				stopItems += stopItem;
 			}
 			$("#stopsList").html(stopItems);
 			$('[data-toggle="popover"]').popover();
-
 			$(".routeNow").html($("#routeNo").val().toUpperCase());
 			$(".routeFrom").html(oriCName);
 			$(".routeTo").html(destCName);
-
 			var top = document.body.scrollTop || document.documentElement.scrollTop
 			scrollBy(0,-top);
 			$(".gettingStop").css("display","none");
