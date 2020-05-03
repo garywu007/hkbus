@@ -185,8 +185,24 @@ function getstops(bound) {
 			var jsonStr = JSON.stringify(result);
 			var jsonObj = JSON.parse(jsonStr);
 			
-			console.log(jsonObj);
-			theJson = jsonObj;
+			if('CTB' != jsonObj.data.co){
+				$.ajax({
+					type: 'get',
+					crossDomain: true,
+					dataType : "json",
+					jsonp : 'callback',
+					jsonpCallback: 'handleResponse',
+					url: 'https://rt.data.gov.hk/v1/transport/citybus-nwfb/route/NWFB/' + $("#routeNo").val().toLowerCase(),
+					success: function(result1){
+						var jsonStr1 = JSON.stringify(result1);
+						var jsonObj1 = JSON.parse(jsonStr1);
+
+						console.log(jsonObj1);
+						//theJson = jsonObj;
+					}
+			} else {
+				console.log(jsonObj);
+			}
 			
 			/*
 			var stopsCount = jsonObj.data.routeStops.length;
