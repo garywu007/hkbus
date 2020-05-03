@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>香港公交集團</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1, maximum-scale=1, user-scalable=no"/>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="apple-touch-icon" href="bus-icon.png">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css">
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js"></script>
+<style>
+body {
+	background-color: #343a40;
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+.container {
+	padding-bottom: 4em;
+}
+
+.routeInput {
+	width: 12.5em;
+}
+
+a {
+  color: black;
+  text-decoration: none;
+}
+
+a:hover { 
+  color:black; 
+  text-decoration: none;
+}
+
+.fare-1 {
+	background-color: FireBrick;
+	color: white;
+}
+
+.fare-2 {
+	background-color: Orange;
+	color: black;
+}
+
+.fare-3 {
+	background-color: LimeGreen;
+	color: white;
+}
+
+.fare-4 {
+	background-color: CornflowerBlue;
+	color: white;
+}
+
+.fare-5 {
+	background-color: OrangeRed;
+	color: white;
+}
+
+.fare-6 {
+	background-color: YellowGreen;
+	color: white;
+}
+
+.fare-7 {
+	background-color: Khaki;
+	color: black;
+}
+
+.gettingStop{
+	margin-top: 50%;
+	width: 100%;
+	text-align: center;
+	display: none;
+}
+
+.routeToast {
+	position: absolute;
+	top: 1.5em; right: 10px;
+	border: 1px solid RebeccaPurple;
+}
+
+.routeToast .toast-header{
+	background-color: RebeccaPurple;
+	color: white;
+}
+
+.routeToast .toast-body{
+	text-align: center;
+}
+
+.trueTime{
+	background-color: DarkGreen;
+	color: LawnGreen;
+	border-radius: 0.1em;
+	padding: 0 0.1em;
+}
+
+.mtrFrame{
+	width: 100vw;
+	height: calc(100vw * 760 / 1205);
+}
+</style>
+</head>
+<body>
+
+<nav class="navbar fixed-bottom navbar-expand-sm bg-dark navbar-dark">
+  <a class="navbar-brand" onclick="openMTR();">
+    <img src="http://www.kmb.hk/chi/assets/KMB_logo.svg" alt="logo" style="width:3em;">
+    <img src="http://www.kmb.hk/chi/assets/LWB_logo.svg" alt="logo" style="width:3em;">
+  </a>
+
+  <div class="input-group input-group-sm routeInput">
+    <input id="routeNo" type="search" autocorrect="off" class="form-control" placeholder="路綫">
+    <div class="input-group-append">
+      <button id="clear" class="btn btn-dark" type="button">&nbsp;X&nbsp;</button>  
+      <button id="goRoute" class="btn btn-secondary" type="button">&nbsp;&nbsp;Go&nbsp;&nbsp;</button>  
+      <button id="backRoute" class="btn btn-light" type="button">Back</button>  
+     </div>
+  </div>
+</nav>
+<br>
+
+<div class="container">
+<ul class="list-group" id="stopsList">
+</ul>
+<div class="gettingStop">
+	<!--
+	<div class="spinner-grow text-danger" role="status">
+	  <span class="sr-only">Loading...</span>
+	</div>
+	<div class="spinner-grow text-warning" role="status">
+	  <span class="sr-only">Loading...</span>
+	</div>
+	<div class="spinner-grow text-success" role="status">
+	  <span class="sr-only">Loading...</span>
+	</div>-->
+	<img src="wait-icon.svg" />
+</div>
+<div class="toast routeToast" data-delay="3000">
+	<div class="toast-header">
+		<strong class="routeNow">---</strong>
+	</div>
+	<div class="toast-body">
+		<p class="routeFrom"></p><p>TO</p><p class="routeTo"></p>
+	</div>
+</div>
+</body>
+<script>
+$(document).ready(function(){
+    $("#goRoute").click(function(){
+	getstops(1);
+    });
+
+    $("#backRoute").click(function(){
+	getstops(2);
+    });
+
+    $("#clear").click(function(){
+	$("#routeNo").val("");
+	$("#routeNo").focus();
+    });
+	
+	var route = getQueryVariable("r");
+	if(route){
+		$("#routeNo").val(route);
+	}
+});
+
+function getstops(bound) {
+	$("#stopsList").fadeOut(50);
+	$(".gettingStop").css("display","inline-block");
+	var route = parseByUnicode($("#routeNo").val());
+	$("#routeNo").val(route.toUpperCase());
+
+	$.ajax({
+		type: 'post',
+		crossDomain: true,
+   		dataType : "json",
+		jsonp : 'callback',
+		jsonpCallback: 'handleResponse',
+		url: 'http://search.kmb.hk/KMBWebSite/Function/FunctionRequest.ashx?action=getstops&route=' + $("#routeNo").val().toUpperCase() + '&bound=' + bound + '&serviceType=1',
+		success: function(result){
+			
+			var jsonStr = JSON.stringify(result);
+			var jsonObj = JSON.parse(jsonStr);
+			var stopsCount = jsonObj.data.routeStops.length;
+
+			var oriCNameRaw = jsonObj.data.basicInfo.OriCName;
+			var oriCName = parseByUnicode(oriCNameRaw);			
+			var destCNameRaw = jsonObj.data.basicInfo.DestCName;
+			var destCName = parseByUnicode(destCNameRaw);			
+
+			var stopItems = "";
+			var prevFare = 0;
+			var fareColor = 0;
+			for(var i = 0; i < stopsCount; i++){
+				var cNameRaw = jsonObj.data.routeStops[i].CName;
+				var cName = parseByUnicode(cNameRaw);
+				var airFare = new Number(jsonObj.data.routeStops[i].AirFare).toFixed(1);
+				if(airFare != prevFare){
+					prevFare = airFare;
+					fareColor += 1;
+				}
+				var fare = airFare > 0 ? '&nbsp;&nbsp;<span class="badge badge-pill fare-' + fareColor + '">$ ' + airFare + '</span>' : "";
+
+				var stopItem = '<li class="list-group-item list-group-item-secondary" onclick="getETA(\'' + $("#routeNo").val().toUpperCase() + '\', \'' + jsonObj.data.routeStops[i].BSICode + '\', ' + jsonObj.data.routeStops[i].Bound + ', ' + jsonObj.data.routeStops[i].ServiceType + ', ' + jsonObj.data.routeStops[i].Seq + ')">' + '<a tabindex="0" role="button" data-toggle="popover" data-trigger="focus" data-placement="bottom" title="' + cName + " > " + destCName + '" data-content="---">' + (i+1) + ". " + cName + '</a>' + '<b style="color: OrangeRed;">' + fare + '</b>' + '</li>';
+				stopItems += stopItem;
+			}
+			$("#stopsList").html(stopItems);
+			$('[data-toggle="popover"]').popover();
+
+			$(".routeNow").html($("#routeNo").val().toUpperCase());
+			$(".routeFrom").html(oriCName);
+			$(".routeTo").html(destCName);
+
+			var top = document.body.scrollTop || document.documentElement.scrollTop
+			scrollBy(0,-top);
+			$(".gettingStop").css("display","none");
+			$("#stopsList").fadeIn(500);
+			$("#stopsList").fadeIn(500, function(){
+				$('.routeToast').toast('show');
+			});
+		}
+	});
+}
+
+function getETA(Route, BSICode, Bound, ServiceType, Seq) {
+	var now = new Date();
+	var unixTime = Math.floor(now/1000) + "080";
+	var data_t = now.getUTCFullYear() + "-" + (now.getUTCMonth() < 9 ? "0" : "") + (now.getUTCMonth() + 1) + "-" + (now.getUTCDate() < 10 ? "0" : "") + now.getUTCDate() + " " + (now.getUTCHours() < 10 ? "0" : "") + now.getUTCHours() + ":" + (now.getUTCMinutes() < 10 ? "0" : "") + now.getUTCMinutes() + ":" + (now.getUTCSeconds() < 10 ? "0" : "") + now.getUTCSeconds() + ".80.";
+	var key = "--31" + data_t + "13--";
+	var rawToken = Route + key + Bound + key + ServiceType + key + BSICode.split("-").join("") + key + Seq + key + unixTime;
+	var data_token = "EA" + btoa(rawToken);
+		
+	$.ajax({
+		type: 'post',
+		crossDomain: true,
+   		dataType : "json",
+		jsonp : 'callback',
+		jsonpCallback: 'handleResponse',
+		data: {"token": data_token, "t": data_t},
+		url: 'http://search.kmb.hk/KMBWebSite/Function/FunctionRequest.ashx/?action=get_ETA&lang=1',
+		success: function(result){
+			var jsonStr = JSON.stringify(result);
+			var jsonObj = JSON.parse(jsonStr);
+
+			var timeStr = "";
+			for(var i = 0; i < jsonObj.data.response.length; i++){
+				if(i == 0){
+					timeStr += "<span class='trueTime'>" + jsonObj.data.response[i].ex.split(" ")[1] + "</span>&nbsp;" + jsonObj.data.response[i].t;
+				} else {
+					timeStr += "<br>" + "<span class='trueTime'>" + jsonObj.data.response[i].ex.split(" ")[1] + "</span>&nbsp;" + jsonObj.data.response[i].t;
+				}
+			}
+			//alert(time0 + "\n" + time1 + "\n" + time2);
+			$(".popover-body").html(timeStr);
+		}
+	});
+}
+
+function parseByUnicode(strRaw){
+//strRaw = "";
+
+var strCorrect = "";
+var strRawLen = strRaw.length;
+
+for(var i = 0; i < strRawLen; i++){
+	// 获取字符
+
+	charI = strRaw.charAt(i); // "中"
+
+
+	// 转为16进制数组
+
+	code16 = strRaw.charCodeAt(i).toString(16); // "4e2d"
+
+
+	//alert(code16);
+	if(code16 == "e88c"){
+		charI = "埗";
+	}
+	if(code16 == "e473"){
+		charI = "邨";
+	}
+	if(code16 == "e1d0"){
+		charI = "栢";
+	}
+	if(code16 == "e05e"){
+		charI = "滙";
+	}
+	if(code16 == "ecf1"){
+		charI = "鱲";
+	}
+	if(code16 == "e517"){
+		charI = "鯽";
+	}
+	if(code16 == "2006" || code16 == "20"){
+		charI = "";
+	}
+	strCorrect += charI;
+}
+
+return strCorrect;
+
+}
+	
+function getQueryVariable(variable){
+	var query = window.location.search.substring(1);
+	var vars = query.split("&");
+	for (var i=0;i<vars.length;i++) {
+		var pair = vars[i].split("=");
+		if(pair[0] == variable){return pair[1];}
+	}
+	return(false);
+}
+	
+function openMTR(){
+	window.open("http://www.mtr.com.hk/alert/map_all.html");
+}
+</script>
+</html>
