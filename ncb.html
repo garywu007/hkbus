@@ -163,6 +163,7 @@ $(document).ready(function(){
 	}
 });
 
+var theJson = '';
 function getstops(bound) {
 	$("#stopsList").fadeOut(50);
 	$(".gettingStop").css("display","inline-block");
@@ -185,6 +186,7 @@ function getstops(bound) {
 			var jsonObj = JSON.parse(jsonStr);
 			
 			console.log(jsonObj);
+			theJson = jsonObj;
 			
 			/*
 			var stopsCount = jsonObj.data.routeStops.length;
