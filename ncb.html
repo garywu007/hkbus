@@ -145,11 +145,11 @@ a:hover {
 <script>
 $(document).ready(function(){
     $("#goRoute").click(function(){
-	getstops(1);
+	getstops('outbound');
     });
 
     $("#backRoute").click(function(){
-	getstops(2);
+	getstops('inbound');
     });
 
     $("#clear").click(function(){
@@ -169,17 +169,24 @@ function getstops(bound) {
 	var route = parseByUnicode($("#routeNo").val());
 	$("#routeNo").val(route.toUpperCase());
 
+	// get stops >> url: 'https://rt.data.gov.hk/v1/transport/citybus-nwfb/route-stop/CTB/' + $("#routeNo").val().toLowerCase() + '/' + bound,
+	
+	
 	$.ajax({
 		type: 'post',
 		crossDomain: true,
    		dataType : "json",
 		jsonp : 'callback',
 		jsonpCallback: 'handleResponse',
-		url: 'http://search.kmb.hk/KMBWebSite/Function/FunctionRequest.ashx?action=getstops&route=' + $("#routeNo").val().toUpperCase() + '&bound=' + bound + '&serviceType=1',
+		url: 'https://rt.data.gov.hk/v1/transport/citybus-nwfb/route/CTB/' + $("#routeNo").val().toLowerCase(),
 		success: function(result){
 			
 			var jsonStr = JSON.stringify(result);
 			var jsonObj = JSON.parse(jsonStr);
+			
+			console.log(jsonObj);
+			
+			/*
 			var stopsCount = jsonObj.data.routeStops.length;
 
 			var oriCNameRaw = jsonObj.data.basicInfo.OriCName;
@@ -217,6 +224,8 @@ function getstops(bound) {
 			$("#stopsList").fadeIn(500, function(){
 				$('.routeToast').toast('show');
 			});
+			
+			*/
 		}
 	});
 }
