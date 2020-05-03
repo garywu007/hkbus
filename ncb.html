@@ -145,11 +145,11 @@ a:hover {
 <script>
 $(document).ready(function(){
     $("#goRoute").click(function(){
-	getstops('outbound');
+	getRoute('outbound');
     });
 
     $("#backRoute").click(function(){
-	getstops('inbound');
+	getRoute('inbound');
     });
 
     $("#clear").click(function(){
@@ -163,16 +163,12 @@ $(document).ready(function(){
 	}
 });
 
-var theJson = '';
-function getstops(bound) {
+function getRoute(bound) {
 	$("#stopsList").fadeOut(50);
 	$(".gettingStop").css("display","inline-block");
 	var route = parseByUnicode($("#routeNo").val());
 	$("#routeNo").val(route.toUpperCase());
 
-	// get stops >> url: 'https://rt.data.gov.hk/v1/transport/citybus-nwfb/route-stop/CTB/' + $("#routeNo").val().toLowerCase() + '/' + bound,
-	
-	
 	$.ajax({
 		type: 'get',
 		crossDomain: true,
@@ -197,13 +193,39 @@ function getstops(bound) {
 						var jsonStr1 = JSON.stringify(result1);
 						var jsonObj1 = JSON.parse(jsonStr1);
 
-						console.log(jsonObj1);
-						//theJson = jsonObj;
+						if('NWFB' == jsonObj.data.co){
+							getstops('NWFB', bound);
+						}
 					}
 				});
 			} else {
-				console.log(jsonObj);
+				getstops('CTB', bound);
 			}
+		}
+	});
+}
+
+var theJson = '';
+function getstops(company, bound) {
+	$("#stopsList").fadeOut(50);
+	$(".gettingStop").css("display","inline-block");
+	var route = parseByUnicode($("#routeNo").val());
+	$("#routeNo").val(route.toUpperCase());
+
+	$.ajax({
+		type: 'get',
+		crossDomain: true,
+   		dataType : "json",
+		jsonp : 'callback',
+		jsonpCallback: 'handleResponse',
+		url: 'https://rt.data.gov.hk/v1/transport/citybus-nwfb/route-stop/' + company + '/' + $("#routeNo").val().toLowerCase() + '/' + bound,
+		success: function(result){
+			
+			var jsonStr = JSON.stringify(result);
+			var jsonObj = JSON.parse(jsonStr);
+			
+			theJson = jsonObj;
+			console.log(theJson);
 			
 			/*
 			var stopsCount = jsonObj.data.routeStops.length;
