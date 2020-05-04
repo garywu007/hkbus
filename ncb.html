@@ -163,6 +163,8 @@ $(document).ready(function(){
 	}
 });
 
+var theJson = '';
+
 function getRoute(bound) {
 	$("#stopsList").fadeOut(50);
 	$(".gettingStop").css("display","inline-block");
@@ -194,20 +196,23 @@ function getRoute(bound) {
 						var jsonObj1 = JSON.parse(jsonStr1);
 
 						if('NWFB' == jsonObj1.data.co){
-							getstops('NWFB', bound);
+							var oriCName = 'outbound' == bound ? jsonObj1.data.orig_tc : jsonObj1.data.dest_tc;
+							var destCName = 'outbound' == bound ? jsonObj1.data.dest_tc : jsonObj1.data.orig_tc;
+							getstops('NWFB', bound, oriCName, destCName);
 						}
 					}
 				});
 			} else {
-				getstops('CTB', bound);
+				var oriCName = 'outbound' == bound ? jsonObj.data.orig_tc : jsonObj.data.dest_tc;
+				var destCName = 'outbound' == bound ? jsonObj.data.dest_tc : jsonObj.data.orig_tc;
+				getstops('CTB', bound, oriCName, destCName);
 			}
 		}
 	});
 }
 
-var theJson = '';
 var stopsName = new Map();
-function getstops(company, bound) {
+function getstops(company, bound, oriCName, destCName) {
 	$("#stopsList").fadeOut(50);
 	$(".gettingStop").css("display","inline-block");
 	var route = parseByUnicode($("#routeNo").val());
@@ -249,16 +254,13 @@ function getstops(company, bound) {
 							var stopsCount = jsonObj.data.length;
 							var stopItems = "";
 							
-							var oriCName = "pending";
-							var destCName = "pending";
-							
 							for(var j = 0; j < stopsCount; j++){
 								jsonObj.data[j].name_tc = stopsName.get(jsonObj.data[j].stop);
 								
 								var cName = stopsName.get(jsonObj.data[j].stop);
-								var fare = 0.0;
+								var fare = '&nbsp;&nbsp;<span class="badge badge-pill fare-1">$ --</span>';
 								
-								var stopItem = '<li class="list-group-item list-group-item-secondary" onclick="">' + '<a tabindex="0" role="button" data-toggle="popover" data-trigger="focus" data-placement="bottom" title="' + cName + " > " + destCName + '" data-content="---">' + (j+1) + ". " + cName + '</a>' + '<b style="color: OrangeRed;">' + fare + '</b>' + '</li>';
+								var stopItem = '<li class="list-group-item list-group-item-secondary" onclick="getETA(\'' + company + '\', \'' + jsonObj.data[j].stop + '\', \'' + $("#routeNo").val().toLowerCase() + '\', \'' + destCName + '\')">' + '<a tabindex="0" role="button" data-toggle="popover" data-trigger="focus" data-placement="bottom" title="' + cName + " > " + destCName + '" data-content="---">' + (j+1) + ". " + cName + '</a>' + '<b style="color: OrangeRed;">' + fare + '</b>' + '</li>';
 								stopItems += stopItem;
 							}
 							
@@ -278,76 +280,45 @@ function getstops(company, bound) {
 					}
 				});
 			}
-			
-			/*
-			//var stopsCount = jsonObj.data.routeStops.length;
-			var oriCNameRaw = jsonObj.data.basicInfo.OriCName;
-			var oriCName = parseByUnicode(oriCNameRaw);			
-			var destCNameRaw = jsonObj.data.basicInfo.DestCName;
-			var destCName = parseByUnicode(destCNameRaw);			
-			//var stopItems = "";
-			var prevFare = 0;
-			var fareColor = 0;
-			for(var i = 0; i < stopsCount; i++){
-				var cNameRaw = jsonObj.data.routeStops[i].CName;
-				var cName = parseByUnicode(cNameRaw);
-				var airFare = new Number(jsonObj.data.routeStops[i].AirFare).toFixed(1);
-				if(airFare != prevFare){
-					prevFare = airFare;
-					fareColor += 1;
-				}
-				var fare = airFare > 0 ? '&nbsp;&nbsp;<span class="badge badge-pill fare-' + fareColor + '">$ ' + airFare + '</span>' : "";
-				var stopItem = '<li class="list-group-item list-group-item-secondary" onclick="getETA(\'' + $("#routeNo").val().toUpperCase() + '\', \'' + jsonObj.data.routeStops[i].BSICode + '\', ' + jsonObj.data.routeStops[i].Bound + ', ' + jsonObj.data.routeStops[i].ServiceType + ', ' + jsonObj.data.routeStops[i].Seq + ')">' + '<a tabindex="0" role="button" data-toggle="popover" data-trigger="focus" data-placement="bottom" title="' + cName + " > " + destCName + '" data-content="---">' + (i+1) + ". " + cName + '</a>' + '<b style="color: OrangeRed;">' + fare + '</b>' + '</li>';
-				stopItems += stopItem;
-			}
-			$("#stopsList").html(stopItems);
-			$('[data-toggle="popover"]').popover();
-			$(".routeNow").html($("#routeNo").val().toUpperCase());
-			$(".routeFrom").html(oriCName);
-			$(".routeTo").html(destCName);
-			var top = document.body.scrollTop || document.documentElement.scrollTop
-			scrollBy(0,-top);
-			$(".gettingStop").css("display","none");
-			$("#stopsList").fadeIn(500);
-			$("#stopsList").fadeIn(500, function(){
-				$('.routeToast').toast('show');
-			});
-			
-			*/
 		}
 	});
 }
 
-function getETA(Route, BSICode, Bound, ServiceType, Seq) {
-	var now = new Date();
-	var unixTime = Math.floor(now/1000) + "080";
-	var data_t = now.getUTCFullYear() + "-" + (now.getUTCMonth() < 9 ? "0" : "") + (now.getUTCMonth() + 1) + "-" + (now.getUTCDate() < 10 ? "0" : "") + now.getUTCDate() + " " + (now.getUTCHours() < 10 ? "0" : "") + now.getUTCHours() + ":" + (now.getUTCMinutes() < 10 ? "0" : "") + now.getUTCMinutes() + ":" + (now.getUTCSeconds() < 10 ? "0" : "") + now.getUTCSeconds() + ".80.";
-	var key = "--31" + data_t + "13--";
-	var rawToken = Route + key + Bound + key + ServiceType + key + BSICode.split("-").join("") + key + Seq + key + unixTime;
-	var data_token = "EA" + btoa(rawToken);
-		
+function getETA(company, stop, route, destCName) {
+	
 	$.ajax({
-		type: 'post',
+		type: 'get',
 		crossDomain: true,
    		dataType : "json",
 		jsonp : 'callback',
 		jsonpCallback: 'handleResponse',
-		data: {"token": data_token, "t": data_t},
-		url: 'http://search.kmb.hk/KMBWebSite/Function/FunctionRequest.ashx/?action=get_ETA&lang=1',
+		url: 'https://rt.data.gov.hk/v1/transport/citybus-nwfb/eta/' + company + '/' + stop + '/' + route,
 		success: function(result){
 			var jsonStr = JSON.stringify(result);
 			var jsonObj = JSON.parse(jsonStr);
 
 			var timeStr = "";
-			for(var i = 0; i < jsonObj.data.response.length; i++){
-				if(i == 0){
-					timeStr += "<span class='trueTime'>" + jsonObj.data.response[i].ex.split(" ")[1] + "</span>&nbsp;" + jsonObj.data.response[i].t;
-				} else {
-					timeStr += "<br>" + "<span class='trueTime'>" + jsonObj.data.response[i].ex.split(" ")[1] + "</span>&nbsp;" + jsonObj.data.response[i].t;
+			var itemCount = 0;
+			for(var i = 0; i < jsonObj.data.length; i++){
+				
+				console.log(destCName.split(" ").join("") + " - " + jsonObj.data[i].dest_tc.split(" ").join(""));
+				if(destCName.split(" ").join("") == jsonObj.data[i].dest_tc.split(" ").join("")){
+					var d = new Date(jsonObj.data[i].eta);
+					var n = d.getHours() + ":" + d.getMinutes() + ":" + d.getSeconds();
+					
+					if(itemCount == 0){
+						
+						timeStr += n;
+					} else {
+						timeStr += "<br>" + n;
+					}
+					
+					itemCount++;
 				}
 			}
-			//alert(time0 + "\n" + time1 + "\n" + time2);
+			
 			$(".popover-body").html(timeStr);
+			
 		}
 	});
 }
