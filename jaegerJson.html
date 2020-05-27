@@ -26,45 +26,191 @@ body {
 	padding-bottom: 4em;
 }
 
+.routeInput {
+	width: 12.5em;
+}
 
+a {
+  color: black;
+  text-decoration: none;
+}
+
+a:hover { 
+  color:black; 
+  text-decoration: none;
+}
+
+.fare-1 {
+	background-color: FireBrick;
+	color: white;
+}
+
+.fare-2 {
+	background-color: Orange;
+	color: black;
+}
+
+.fare-3 {
+	background-color: LimeGreen;
+	color: white;
+}
+
+.fare-4 {
+	background-color: CornflowerBlue;
+	color: white;
+}
+
+.fare-5 {
+	background-color: OrangeRed;
+	color: white;
+}
+
+.fare-6 {
+	background-color: YellowGreen;
+	color: white;
+}
+
+.fare-7 {
+	background-color: Khaki;
+	color: black;
+}
+
+.gettingStop{
+	margin-top: 50%;
+	width: 100%;
+	text-align: center;
+	display: none;
+}
+
+.routeToast {
+	position: absolute;
+	top: 1.5em; right: 10px;
+	border: 1px solid RebeccaPurple;
+}
+
+.routeToast .toast-header{
+	background-color: RebeccaPurple;
+	color: white;
+}
+
+.routeToast .toast-body{
+	text-align: center;
+}
+
+.trueTime{
+	background-color: DarkGreen;
+	color: LawnGreen;
+	border-radius: 0.1em;
+	padding: 0 0.1em;
+}
+
+.mtrFrame{
+	width: 100vw;
+	height: calc(100vw * 760 / 1205);
+}
 </style>
 </head>
 <body>
 
 <div class="container">
-<textarea id="inputData" name="inputData" rows="20" cols="100"></textarea>
+<textarea id="w3review" name="w3review" rows="4" cols="50"></textarea>
+<br>
 <input type="button" onclick="getWhatIwant()" value="magic"/>
+<input type="button" onclick="copyWhatIwant()" value="copy"/>
 
 </div>
+<div id="result" style="width: 80vw; height: 100%; color: lightgray"></div>
 </body>
 <script>
+var shops = "";
+var shopsn = "";
+
 function getWhatIwant() {
-	var rawString = document.getElementById("inputData").value;
+	var rawString = document.getElementById("w3review").value;
 	
 	//var jsonStr = JSON.stringify(rawString);
 	var jsonObj = JSON.parse(rawString);
 	
-
-	console.log(jsonObj.content);
+	shops = "";
+	shopsn = "";
 	
 	for(var i = 0; i < jsonObj.content.length; i++){
-		console.log(jsonObj.content[i].sid + "|" +
+		shops += jsonObj.content[i].sid + "|" +
 		jsonObj.content[i].name + "|" +
 		jsonObj.content[i].country + "|" +
 		jsonObj.content[i].city + "|" +
 		jsonObj.content[i].street + "|" +
-		jsonObj.content[i].typeofstore);
+		jsonObj.content[i].typeofstore + "<br>";
+		
+		shopsn += jsonObj.content[i].sid + "|" +
+		jsonObj.content[i].name + "|" +
+		jsonObj.content[i].country + "|" +
+		jsonObj.content[i].city + "|" +
+		jsonObj.content[i].street + "|" +
+		jsonObj.content[i].typeofstore + "\n";
 	}	
+	
+	$("#result").html(shops);
 }
 
-function getQueryVariable(variable){
-	var query = window.location.search.substring(1);
-	var vars = query.split("&");
-	for (var i=0;i<vars.length;i++) {
-		var pair = vars[i].split("=");
-		if(pair[0] == variable){return pair[1];}
-	}
-	return(false);
+function copyWhatIwant(){
+	Clipboard.copy(shopsn);
 }
+
+window.Clipboard = (function(window, document, navigator) {
+  var textArea,
+      copy;
+
+  // 判断是不是ios端
+  function isOS() {
+    return navigator.userAgent.match(/ipad|iphone/i);
+  }
+  //创建文本元素
+  function createTextArea(text) {
+    textArea = document.createElement('textArea');
+    textArea.value = text;
+    document.body.appendChild(textArea);
+  }
+  //选择内容
+  function selectText() {
+    var range,
+        selection;
+
+    if (isOS()) {
+      range = document.createRange();
+      range.selectNodeContents(textArea);
+      selection = window.getSelection();
+      selection.removeAllRanges();
+      selection.addRange(range);
+      textArea.setSelectionRange(0, 999999);
+    } else {
+      textArea.select();
+    }
+  }
+
+//复制到剪贴板
+  function copyToClipboard() {        
+    try{
+      if(document.execCommand("Copy")){
+        alert("复制成功！");  
+      }else{
+        alert("复制失败！请手动复制！");
+      }
+    }catch(err){
+      alert("复制错误！请手动复制！")
+    }
+    document.body.removeChild(textArea);
+  }
+
+  copy = function(text) {
+    createTextArea(text);
+    selectText();
+    copyToClipboard();
+  };
+
+  return {
+    copy: copy
+  };
+})(window, document, navigator);
 </script>
 </html>
