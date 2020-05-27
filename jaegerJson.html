@@ -119,7 +119,7 @@ a:hover {
 </body>
 <script>
 function getWhatIwant() {
-	var rawString = $("#w3review").val();
+	var rawString = document.getElementById("w3review").value;
 	
 	var jsonStr = JSON.stringify(rawString);
 	var jsonObj = JSON.parse(jsonStr);
