@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>xxxx</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1, maximum-scale=1, user-scalable=no"/>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="apple-touch-icon" href="bus-icon.png">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css">
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js"></script>
+<style>
+body {
+	background-color: #343a40;
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+.container {
+	padding-bottom: 4em;
+}
+
+.routeInput {
+	width: 12.5em;
+}
+
+a {
+  color: black;
+  text-decoration: none;
+}
+
+a:hover { 
+  color:black; 
+  text-decoration: none;
+}
+
+.fare-1 {
+	background-color: FireBrick;
+	color: white;
+}
+
+.fare-2 {
+	background-color: Orange;
+	color: black;
+}
+
+.fare-3 {
+	background-color: LimeGreen;
+	color: white;
+}
+
+.fare-4 {
+	background-color: CornflowerBlue;
+	color: white;
+}
+
+.fare-5 {
+	background-color: OrangeRed;
+	color: white;
+}
+
+.fare-6 {
+	background-color: YellowGreen;
+	color: white;
+}
+
+.fare-7 {
+	background-color: Khaki;
+	color: black;
+}
+
+.gettingStop{
+	margin-top: 50%;
+	width: 100%;
+	text-align: center;
+	display: none;
+}
+
+.routeToast {
+	position: absolute;
+	top: 1.5em; right: 10px;
+	border: 1px solid RebeccaPurple;
+}
+
+.routeToast .toast-header{
+	background-color: RebeccaPurple;
+	color: white;
+}
+
+.routeToast .toast-body{
+	text-align: center;
+}
+
+.trueTime{
+	background-color: DarkGreen;
+	color: LawnGreen;
+	border-radius: 0.1em;
+	padding: 0 0.1em;
+}
+
+.mtrFrame{
+	width: 100vw;
+	height: calc(100vw * 760 / 1205);
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+<textarea id="w3review" name="w3review" rows="4" cols="50"></textarea>
+<input type="button" onclick="getWhatIwant()"/>
+
+</div>
+</body>
+<script>
+function getWhatIwant() {
+	$.ajax({
+		type: 'get',
+		crossDomain: true,
+   		dataType : "json",
+		jsonp : 'callback',
+		jsonpCallback: 'handleResponse',
+		url: 'https://rt.data.gov.hk/v1/transport/citybus-nwfb/route-stop/' + company + '/' + $("#routeNo").val().toLowerCase() + '/' + bound,
+		success: function(result){
+			
+			stopsName = new Map();
+			
+			var jsonStr = JSON.stringify(result);
+			var jsonObj = JSON.parse(jsonStr);
+			
+			var httpCallCount = jsonObj.data.length;
+			for(var i = 0; i < jsonObj.data.length; i++){
+				var item = i + "_ " + jsonObj.data[i].stop;
+				$.ajax({
+					type: 'get',
+					crossDomain: true,
+					dataType : "json",
+					jsonp : 'callback',
+					jsonpCallback: 'handleResponse',
+					url: 'https://rt.data.gov.hk/v1/transport/citybus-nwfb/stop/' + jsonObj.data[i].stop,
+					success: function(result1){
+						httpCallCount--;
+						
+						var jsonStr1 = JSON.stringify(result1);
+						var jsonObj1 = JSON.parse(jsonStr1);
+						
+						stopsName.set(jsonObj1.data.stop, jsonObj1.data.name_tc);
+						
+						if(0 == httpCallCount){
+							var stopsCount = jsonObj.data.length;
+							var stopItems = "";
+							
+							for(var j = 0; j < stopsCount; j++){
+								jsonObj.data[j].name_tc = stopsName.get(jsonObj.data[j].stop);
+								
+								var cName = stopsName.get(jsonObj.data[j].stop);
+								var fare = '&nbsp;&nbsp;<span class="badge badge-pill fare-1">$ --</span>';
+								
+								var stopItem = '<li class="list-group-item list-group-item-secondary" onclick="getETA(\'' + company + '\', \'' + jsonObj.data[j].stop + '\', \'' + $("#routeNo").val().toLowerCase() + '\', \'' + destCName + '\')">' + '<a tabindex="0" role="button" data-toggle="popover" data-trigger="focus" data-placement="bottom" title="' + cName + " > " + destCName + '" data-content="---">' + (j+1) + ". " + cName + '</a>' + '<b style="color: OrangeRed;">' + fare + '</b>' + '</li>';
+								stopItems += stopItem;
+							}
+							
+							$("#stopsList").html(stopItems);
+							$('[data-toggle="popover"]').popover();
+							$(".routeNow").html($("#routeNo").val().toUpperCase());
+							$(".routeFrom").html(oriCName);
+							$(".routeTo").html(destCName);
+							var top = document.body.scrollTop || document.documentElement.scrollTop
+							scrollBy(0,-top);
+							$(".gettingStop").css("display","none");
+							$("#stopsList").fadeIn(500);
+							$("#stopsList").fadeIn(500, function(){
+								$('.routeToast').toast('show');
+							});
+						}
+					}
+				});
+			}
+		}
+	});
+}
+
+function getQueryVariable(variable){
+	var query = window.location.search.substring(1);
+	var vars = query.split("&");
+	for (var i=0;i<vars.length;i++) {
+		var pair = vars[i].split("=");
+		if(pair[0] == variable){return pair[1];}
+	}
+	return(false);
+}
+</script>
+</html>
