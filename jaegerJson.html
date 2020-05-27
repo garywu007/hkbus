@@ -11,6 +11,7 @@
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js"></script>
+  <script type="text/javascript" src="data.json"></script>
 <style>
 body {
 	background-color: #343a40;
@@ -112,8 +113,8 @@ a:hover {
 <body>
 
 <div class="container">
-<textarea id="w3review" name="w3review" rows="4" cols="50"></textarea>
-<input type="button" onclick="getWhatIwant()"/>
+<textarea id="w3review" name="w3review" rows="4" cols="50">
+<input type="button" onclick="getWhatIwant()" value="magic"/>
 
 </div>
 </body>
@@ -121,17 +122,20 @@ a:hover {
 function getWhatIwant() {
 	var rawString = document.getElementById("w3review").value;
 	
-	var jsonStr = JSON.stringify(rawString);
-	var jsonObj = JSON.parse(jsonStr);
+	//var jsonStr = JSON.stringify(rawString);
+	var jsonObj = JSON.parse(rawString);
 	
-	console.log(jsonObj.serverMessage);
+
+	console.log(jsonObj.content);
 	
-	/*
 	for(var i = 0; i < jsonObj.content.length; i++){
-		
-	}
-	*/
-	
+		console.log(jsonObj.content[i].sid + "|" +
+		jsonObj.content[i].name + "|" +
+		jsonObj.content[i].country + "|" +
+		jsonObj.content[i].city + "|" +
+		jsonObj.content[i].street + "|" +
+		jsonObj.content[i].typeofstore);
+	}	
 }
 
 function getQueryVariable(variable){
