@@ -119,70 +119,19 @@ a:hover {
 </body>
 <script>
 function getWhatIwant() {
-	$.ajax({
-		type: 'get',
-		crossDomain: true,
-   		dataType : "json",
-		jsonp : 'callback',
-		jsonpCallback: 'handleResponse',
-		url: 'https://rt.data.gov.hk/v1/transport/citybus-nwfb/route-stop/' + company + '/' + $("#routeNo").val().toLowerCase() + '/' + bound,
-		success: function(result){
-			
-			stopsName = new Map();
-			
-			var jsonStr = JSON.stringify(result);
-			var jsonObj = JSON.parse(jsonStr);
-			
-			var httpCallCount = jsonObj.data.length;
-			for(var i = 0; i < jsonObj.data.length; i++){
-				var item = i + "_ " + jsonObj.data[i].stop;
-				$.ajax({
-					type: 'get',
-					crossDomain: true,
-					dataType : "json",
-					jsonp : 'callback',
-					jsonpCallback: 'handleResponse',
-					url: 'https://rt.data.gov.hk/v1/transport/citybus-nwfb/stop/' + jsonObj.data[i].stop,
-					success: function(result1){
-						httpCallCount--;
-						
-						var jsonStr1 = JSON.stringify(result1);
-						var jsonObj1 = JSON.parse(jsonStr1);
-						
-						stopsName.set(jsonObj1.data.stop, jsonObj1.data.name_tc);
-						
-						if(0 == httpCallCount){
-							var stopsCount = jsonObj.data.length;
-							var stopItems = "";
-							
-							for(var j = 0; j < stopsCount; j++){
-								jsonObj.data[j].name_tc = stopsName.get(jsonObj.data[j].stop);
-								
-								var cName = stopsName.get(jsonObj.data[j].stop);
-								var fare = '&nbsp;&nbsp;<span class="badge badge-pill fare-1">$ --</span>';
-								
-								var stopItem = '<li class="list-group-item list-group-item-secondary" onclick="getETA(\'' + company + '\', \'' + jsonObj.data[j].stop + '\', \'' + $("#routeNo").val().toLowerCase() + '\', \'' + destCName + '\')">' + '<a tabindex="0" role="button" data-toggle="popover" data-trigger="focus" data-placement="bottom" title="' + cName + " > " + destCName + '" data-content="---">' + (j+1) + ". " + cName + '</a>' + '<b style="color: OrangeRed;">' + fare + '</b>' + '</li>';
-								stopItems += stopItem;
-							}
-							
-							$("#stopsList").html(stopItems);
-							$('[data-toggle="popover"]').popover();
-							$(".routeNow").html($("#routeNo").val().toUpperCase());
-							$(".routeFrom").html(oriCName);
-							$(".routeTo").html(destCName);
-							var top = document.body.scrollTop || document.documentElement.scrollTop
-							scrollBy(0,-top);
-							$(".gettingStop").css("display","none");
-							$("#stopsList").fadeIn(500);
-							$("#stopsList").fadeIn(500, function(){
-								$('.routeToast').toast('show');
-							});
-						}
-					}
-				});
-			}
-		}
-	});
+	var rawString = $("#w3review").val();
+	
+	var jsonStr = JSON.stringify(rawString);
+	var jsonObj = JSON.parse(jsonStr);
+	
+	console.log(jsonObj.serverMessage);
+	
+	/*
+	for(var i = 0; i < jsonObj.content.length; i++){
+		
+	}
+	*/
+	
 }
 
 function getQueryVariable(variable){
